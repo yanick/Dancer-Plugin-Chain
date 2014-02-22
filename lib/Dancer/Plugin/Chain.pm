@@ -161,8 +161,7 @@ routes.
 
 =head2 KNOWN CAVEATS
 
-The plugin does not support C<prefix> yet, and only support string-based urls
-(so no regexes).
+The plugin only support string-based urls for now (so no regexes).
 
 =head1 EXPORTED FUNCTIONS
 

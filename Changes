@@ -8,6 +8,7 @@ Revision history for Dancer-Plugin-Chain
  [BUG FIXES]
 
  [DOCUMENTATION]
+ - 'prefix' plays along with the plugin, after all.
 
  [ENHANCEMENTS]
 
