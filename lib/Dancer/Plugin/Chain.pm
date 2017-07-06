@@ -20,10 +20,10 @@ package
 
 use Moose;
 
-has "path_segments" => (
-    traits => [ qw/ Array /],
-    isa => 'ArrayRef',
-    is => 'ro',
+has path_segments => (
+    traits  => [ qw/ Array /],
+    isa     => 'ArrayRef',
+    is      => 'ro',
     default => sub { [] },
     handles => {
         add_to_path       => 'push',
@@ -37,9 +37,9 @@ sub path {
 }
 
 has code_blocks => (
-    traits => [ qw/ Array /],
-    isa => 'ArrayRef',
-    is => 'ro',
+    traits  => [ qw/ Array /],
+    isa     => 'ArrayRef',
+    is      => 'ro',
     default => sub { [] },
     handles => {
         add_to_code     => 'push',
@@ -62,9 +62,6 @@ sub BUILD {
     my $self = shift;
     my @args = @{ $_[0]{args} };
 
-    my $code;
-    $code = pop @args if ref $args[-1] eq 'CODE';
-
     for my $segment ( @args ) {
         if ( ref $segment eq __PACKAGE__ ) {
             $self->add_to_path( $segment->all_path_segments );
@@ -77,8 +74,6 @@ sub BUILD {
             $self->add_to_path( $segment );
         }
     }
-
-    $self->add_to_code($code) if $code;
 }
 
 sub as_route {
