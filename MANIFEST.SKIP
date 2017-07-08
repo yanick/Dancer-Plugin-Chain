@@ -1,8 +1,0 @@
-^dist.ini
-^MANIFEST.SKIP
-Dancer-Plugin-Chain.*
-^\.gitignore
-^\.git
-^\.build
-
-.mailmap

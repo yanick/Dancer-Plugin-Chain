@@ -1,6 +1,7 @@
 package Dancer::Plugin::Chain;
+our $AUTHORITY = 'cpan:YANICK';
 # ABSTRACT: Chained actions for Dancer
-
+$Dancer::Plugin::Chain::VERSION = '0.1.1';
 use strict;
 use warnings;
 
@@ -101,6 +102,17 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Dancer::Plugin::Chain - Chained actions for Dancer
+
+=head1 VERSION
+
+version 0.1.1
 
 =head1 SYNOPSIS
 
@@ -202,7 +214,6 @@ would be is equivalent to
                         qw/ event site /;
     }
 
-
 In scalar context, C<chain> returns its underlying object. 
 In list context, it returns a route / action pair of values (). That's how it
 can work transparently with C<get>, C<post> and friends.
@@ -212,7 +223,6 @@ can work transparently with C<get>, C<post> and friends.
 
     # returns the pair that makes 'get' happy
     get chain $foo_chain;
-
 
 =head1 SEE ALSO
 
@@ -228,5 +238,15 @@ L<Dancer-Plugin-Dispatcher>
 
 =back
 
-=cut
+=head1 AUTHOR
 
+Yanick Champoux <yanick@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2017, 2014 by Yanick Champoux.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
