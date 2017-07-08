@@ -1,6 +1,8 @@
 Revision history for Dancer-Plugin-Chain
 
 {{$NEXT}}
+ - tidy up the code, no feature modification.
+
  [API CHANGES]
 
  [BUG FIXES]
