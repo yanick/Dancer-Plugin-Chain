@@ -8,9 +8,9 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 register chain => sub {
-    my $link = Dancer::Plugin::Chain::Link->new( args => [ @_ ] );
+    my $link = Dancer::Plugin::Chain::Link->new( segments => [ @_ ] );
     
-    return wantarray ? $link->as_route : $link;
+    return wantarray ? @$link : $link;
 };
 
 register_plugin;
@@ -20,27 +20,60 @@ package
 
 use Moose;
 
-has "path_segments" => (
-    traits => [ qw/ Array /],
-    isa => 'ArrayRef',
-    is => 'ro',
+use Ref::Util qw/ is_coderef is_ref /;
+use List::Util qw/ reduce /;
+
+use overload '@{}' => sub { [ $_[0]->as_route ] };
+
+# all segments as passed to the chain
+has segments => (
+    traits  => [ qw/ Array /],
+    isa     => 'ArrayRef',
+    is      => 'ro',
     default => sub { [] },
+    handles => { all_segments => 'elements' },
+);
+
+
+# segments that are strings ('/foo', '/bar/:id')
+has path_segments => (
+    traits  => [ qw/ Array /],
+    isa     => 'ArrayRef',
+    is      => 'ro',
+    default => sub { [] },
+    lazy    => 1,
+    default => sub { 
+        my $self = shift;
+        [
+            grep { !is_ref($_) }
+            map  { 
+                eval { $_->isa( __PACKAGE__ ) } ? $_->all_path_segments : $_;
+            } $self->all_segments
+        ]
+    },
     handles => {
         add_to_path       => 'push',
-        all_path_segments => 'elements'
+        all_path_segments => 'elements',
+        path              => [ join => '' ],
+
     },
 );
 
-sub path {
-    my $self = shift;
-    return join '', $self->all_path_segments;
-}
-
+# segments that are code blocks
 has code_blocks => (
-    traits => [ qw/ Array /],
-    isa => 'ArrayRef',
-    is => 'ro',
-    default => sub { [] },
+    traits  => [ qw/ Array /],
+    isa     => 'ArrayRef',
+    is      => 'ro',
+    lazy    => 1,
+    default => sub { 
+        my $self = shift;
+        [
+            grep { is_coderef($_) }
+            map  { 
+                eval { $_->isa( __PACKAGE__ ) } ? $_->all_code_blocks : $_;
+            } $self->all_segments
+        ]
+    },
     handles => {
         add_to_code     => 'push',
         all_code_blocks => 'elements'
@@ -50,41 +83,16 @@ has code_blocks => (
 sub code {
     my $self = shift;
 
-    my @code = $self->all_code_blocks;
     return sub {
-        my $result;
-        $result = $_->(@_) for @code;
-        return $result;
+        my @args = @_;
+        return reduce { $b->(@args) } '', $self->all_code_blocks;
     }
-}
-
-sub BUILD {
-    my $self = shift;
-    my @args = @{ $_[0]{args} };
-
-    my $code;
-    $code = pop @args if ref $args[-1] eq 'CODE';
-
-    for my $segment ( @args ) {
-        if ( ref $segment eq __PACKAGE__ ) {
-            $self->add_to_path( $segment->all_path_segments );
-            $self->add_to_code( $segment->all_code_blocks );
-        }
-        elsif( ref $segment eq 'CODE' ) {
-            $self->add_to_code($segment);
-        } 
-        else {
-            $self->add_to_path( $segment );
-        }
-    }
-
-    $self->add_to_code($code) if $code;
 }
 
 sub as_route {
     my $self = shift;
 
-    return ( $self->path, $self->code );
+    return map { $self->$_ } qw/ path code /;
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -144,7 +152,9 @@ __END__
 
 =head1 DESCRIPTION
 
-Implementation of Catalyst-like chained routes.
+Implementation of Catalyst-like chained routes. This kind of behavior can
+usually be fulfilled by judicious uses of C<prefix>. But hey, diversity is
+the spice of life, so there you go.
 
 The plugin exports a single keyword, C<chain>, which creates the chained
 routes. 

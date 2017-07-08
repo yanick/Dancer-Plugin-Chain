@@ -5,3 +5,4 @@ Dancer-Plugin-Chain.*
 ^\.git
 ^\.build
 
+.mailmap
